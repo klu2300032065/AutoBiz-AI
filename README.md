@@ -59,5 +59,4 @@ You will be prompted to choose a mode:
 
 All projects built by the Builder Agent are securely saved inside the `workspace/generated_projects/` directory. Each project includes its own dependencies and configuration files.
 
-## License
-MIT
+
