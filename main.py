@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from agents.research_agent import ResearchAgent
 from agents.builder_agent import BuilderAgent
+from agents.qa_agent import QAAgent
 
 def main():
     load_dotenv()
@@ -9,8 +10,9 @@ def main():
     print("Welcome to AutoBiz AI")
     print("1. Research Mode")
     print("2. Build Mode")
+    print("3. QA Mode")
     
-    choice = input("Select a mode (1 or 2): ").strip()
+    choice = input("Select a mode (1, 2, or 3): ").strip()
     
     if choice == "1":
         agent = ResearchAgent()
@@ -40,6 +42,16 @@ Technology: React + Vite, FastAPI, SQLite
             
         print("\nBuilder Agent is generating the project... This will take a few minutes.\n")
         result = agent.run(spec)
+        print(result)
+        
+    elif choice == "3":
+        agent = QAAgent()
+        project_name = input("Enter project name to QA (Press Enter for 'student-expense-tracker'):\n").strip()
+        if not project_name:
+            project_name = "student-expense-tracker"
+            
+        print(f"\nQA Agent is testing {project_name}... This may take a while.\n")
+        result = agent.run(project_name)
         print(result)
         
     else:
