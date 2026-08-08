@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from agents.research_agent import ResearchAgent
 from agents.builder_agent import BuilderAgent
 from agents.qa_agent import QAAgent
+from agents.deployment_agent import DeploymentAgent
 
 def main():
     load_dotenv()
@@ -11,8 +12,9 @@ def main():
     print("1. Research Mode")
     print("2. Build Mode")
     print("3. QA Mode")
+    print("4. Deployment Mode")
     
-    choice = input("Select a mode (1, 2, or 3): ").strip()
+    choice = input("Select a mode (1, 2, 3, or 4): ").strip()
     
     if choice == "1":
         agent = ResearchAgent()
@@ -51,6 +53,16 @@ Technology: React + Vite, FastAPI, SQLite
             project_name = "student-expense-tracker"
             
         print(f"\nQA Agent is testing {project_name}... This may take a while.\n")
+        result = agent.run(project_name)
+        print(result)
+        
+    elif choice == "4":
+        agent = DeploymentAgent()
+        project_name = input("Enter project name to deploy (Press Enter for 'student-expense-tracker'):\n").strip()
+        if not project_name:
+            project_name = "student-expense-tracker"
+            
+        print(f"\nDeployment Agent is preparing {project_name}... This may take a while.\n")
         result = agent.run(project_name)
         print(result)
         
