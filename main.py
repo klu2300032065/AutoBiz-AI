@@ -4,6 +4,7 @@ from agents.research_agent import ResearchAgent
 from agents.builder_agent import BuilderAgent
 from agents.qa_agent import QAAgent
 from agents.deployment_agent import DeploymentAgent
+from agents.marketing_sales_analytics_agent import MarketingSalesAnalyticsAgent
 
 def main():
     load_dotenv()
@@ -13,8 +14,9 @@ def main():
     print("2. Build Mode")
     print("3. QA Mode")
     print("4. Deployment Mode")
+    print("5. MSA (Marketing, Sales & Analytics) Mode")
     
-    choice = input("Select a mode (1, 2, 3, or 4): ").strip()
+    choice = input("Select a mode (1, 2, 3, 4, or 5): ").strip()
     
     if choice == "1":
         agent = ResearchAgent()
@@ -63,6 +65,16 @@ Technology: React + Vite, FastAPI, SQLite
             project_name = "student-expense-tracker"
             
         print(f"\nDeployment Agent is preparing {project_name}... This may take a while.\n")
+        result = agent.run(project_name)
+        print(result)
+        
+    elif choice == "5":
+        agent = MarketingSalesAnalyticsAgent()
+        project_name = input("Enter project name for MSA (Press Enter for 'student-expense-tracker'):\n").strip()
+        if not project_name:
+            project_name = "student-expense-tracker"
+            
+        print(f"\nMSA Agent is generating reports and campaigns for {project_name}... This may take a while.\n")
         result = agent.run(project_name)
         print(result)
         
