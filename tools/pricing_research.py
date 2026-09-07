@@ -1,5 +1,5 @@
 from tools.web_search import web_search
-import ollama
+from tools.research_tools import query_ollama
 
 def pricing_research(product_category: str) -> str:
     """
@@ -23,9 +23,5 @@ def pricing_research(product_category: str) -> str:
     IMPORTANT: Clearly distinguish between verified prices from the sources and your estimates. Do NOT invent prices. If you cannot find verified prices, state "Not verified".
     """
     
-    response = ollama.chat(
-        model="llama3.2",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    return response["message"]["content"]
+    return query_ollama(prompt)
+

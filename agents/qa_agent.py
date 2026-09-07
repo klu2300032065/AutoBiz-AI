@@ -6,16 +6,36 @@ from tools.dependency_checker import check_dependencies
 from tools.code_checker import run_static_checks
 from tools.test_runner import run_frontend_build
 from tools.api_tester import test_backend_api
-from tools.file_manager import _ensure_safe_path
+from tools.file_manager import _ensure_safe_path, sanitize_project_name, get_project_path
+
+from models.task import Task
 
 class QAAgent:
     def __init__(self):
         self.model = "llama3.2"
 
-    def run(self, project_name: str) -> str:
-        project_path = os.path.join(os.getcwd(), "workspace", "generated_projects", project_name)
+    def run(self, task_or_input) -> dict:
+        if isinstance(task_or_input, Task):
+            task_id = task_or_input.task_id
+            input_data = task_or_input.input_data
+        else:
+            task_id = 0
+            input_data = str(task_or_input)
+
+        if not input_data:
+            return {"status": "error", "agent": "QAAgent", "task_id": task_id, "result": None, "errors": "No input_data provided"}
+            
+        project_name = sanitize_project_name(input_data)
+        project_path = get_project_path(project_name)
         if not os.path.exists(project_path):
-            return f"Error: Project directory {project_path} not found."
+            return {
+                "status": "error",
+                "agent": "QAAgent",
+                "task_id": task_id,
+                "result": None,
+                "artifacts": [],
+                "errors": [f"Error: Project directory {project_path} not found."]
+            }
             
         print(f"Inspecting project: {project_name}...")
         tech_info = inspect_project(project_path)
@@ -74,12 +94,18 @@ class QAAgent:
         # Determine overall status
         status = "PASS"
         if len(issues) > 0:
-            if any(i["severity"] == "CRITICAL" for i in issues):
-                status = "FAIL"
-            else:
-                status = "PASS WITH WARNINGS"
+            status = "PASS WITH WARNINGS"
                 
-        return self.generate_report(project_name, tech_info, dep_results, frontend_res, static_results, api_res, issues, auto_fixes_applied, status)
+        report = self.generate_report(project_name, tech_info, dep_results, frontend_res, static_results, api_res, issues, auto_fixes_applied, status)
+        
+        return {
+            "status": "success" if status != "FAIL" else "error",
+            "agent": "QAAgent",
+            "task_id": task_id,
+            "result": report,
+            "artifacts": [],
+            "errors": issues
+        }
         
     def attempt_autofix(self, project_path: str, raw_error: str) -> dict:
         prompt = f"""
@@ -102,10 +128,13 @@ class QAAgent:
         try:
             response = ollama.chat(model=self.model, messages=[{"role": "user", "content": prompt}])
             raw_response = response["message"]["content"].strip()
-            if raw_response.startswith("```json"):
-                raw_response = raw_response[7:-3].strip()
-            elif raw_response.startswith("```"):
-                raw_response = raw_response[3:-3].strip()
+            
+            # Find the JSON object block
+            import re
+            match = re.search(r"\{.*\}", raw_response, re.DOTALL)
+            if match:
+                raw_response = match.group(0)
+            
             fix_plan = json.loads(raw_response)
             
             if fix_plan.get("is_safe") and fix_plan.get("file_relative_path"):

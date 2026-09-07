@@ -3,8 +3,9 @@ from typing import Optional
 
 @dataclass
 class BusinessState:
+    cycle_id: int = 1
     product: Optional[str] = None
-    stage: str = "RESEARCH"
+    stage: str = "NO_PRODUCT"
     qa: Optional[str] = None
     deployment: Optional[str] = None
     marketing: Optional[str] = None
@@ -15,3 +16,4 @@ class BusinessState:
     analytics: Optional[str] = None
     build_status: Optional[str] = None
     research_results: Optional[str] = None
+    qa_retry_count: int = 0

@@ -1,5 +1,5 @@
 from tools.web_search import web_search
-import ollama
+from tools.research_tools import query_ollama
 
 def problem_research(problem: str) -> str:
     """
@@ -19,9 +19,5 @@ def problem_research(problem: str) -> str:
     Do not invent evidence. If no strong evidence is found, state "Not verified".
     """
     
-    response = ollama.chat(
-        model="llama3.2",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    return response["message"]["content"]
+    return query_ollama(prompt)
+

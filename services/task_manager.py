@@ -1,3 +1,4 @@
+from typing import Optional
 from memory.business_memory import BusinessMemory
 from models.task import Task
 
@@ -5,10 +6,11 @@ class TaskManager:
     def __init__(self):
         self.memory = BusinessMemory()
 
-    def create_task(self, type_str: str, description: str, dependencies: list[int] = None) -> int:
+    def create_task(self, type_str: str, description: str, dependencies: list[int] = None, cycle_id: Optional[int] = None) -> int:
         if dependencies is None:
             dependencies = []
-        task = Task(task_id=0, type=type_str, description=description, dependencies=dependencies)
+        c_id = cycle_id or self.memory.get_active_cycle_id()
+        task = Task(task_id=0, type=type_str, description=description, dependencies=dependencies, cycle_id=c_id)
         return self.memory.create_task(task)
 
     def can_run(self, task_id: int) -> bool:
@@ -32,8 +34,9 @@ class TaskManager:
                 task.assigned_agent = assigned_agent
             self.memory.update_task(task)
 
-    def get_next_runnable_task(self) -> Task:
-        tasks = self.memory.get_all_tasks()
+    def get_next_runnable_task(self, cycle_id: Optional[int] = None) -> Task:
+        c_id = cycle_id or self.memory.get_active_cycle_id()
+        tasks = self.memory.get_all_tasks(cycle_id=c_id)
         for t in tasks:
             if self.can_run(t.task_id):
                 return t

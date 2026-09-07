@@ -1,5 +1,5 @@
 from tools.web_search import web_search
-import ollama
+from tools.research_tools import query_ollama
 
 def competitor_research(product_idea: str) -> str:
     """
@@ -24,9 +24,5 @@ def competitor_research(product_idea: str) -> str:
     If no competitors are found in the results, state that.
     """
     
-    response = ollama.chat(
-        model="llama3.2",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    return response["message"]["content"]
+    return query_ollama(prompt)
+

@@ -110,10 +110,91 @@ def init_db():
         )
     """)
     
+    # Social Accounts
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS social_accounts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cycle_id INTEGER DEFAULT 1,
+            platform TEXT,
+            account_id TEXT,
+            account_name TEXT,
+            account_type TEXT,
+            status TEXT DEFAULT 'NOT_CONNECTED',
+            oauth_connected INTEGER DEFAULT 0,
+            credential_reference TEXT,
+            token_expires_at TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    for col, col_type in [("account_type", "TEXT"), ("credential_reference", "TEXT"), ("token_expires_at", "TEXT")]:
+        try:
+            c.execute(f"ALTER TABLE social_accounts ADD COLUMN {col} {col_type}")
+        except Exception:
+            pass
+    
+    # Brand Profiles
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS brand_profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cycle_id INTEGER DEFAULT 1,
+            product_name TEXT,
+            brand_name TEXT,
+            tagline TEXT,
+            short_description TEXT,
+            long_description TEXT,
+            target_audience TEXT,
+            value_proposition TEXT,
+            tone TEXT,
+            keywords TEXT,
+            cta TEXT,
+            website_placeholder TEXT,
+            social_bio TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Posts (Social Media Content Calendar & Queue)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS posts (
+            post_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cycle_id INTEGER DEFAULT 1,
+            platform TEXT,
+            content_type TEXT,
+            caption TEXT,
+            headline TEXT,
+            cta TEXT,
+            hashtags TEXT,
+            media_prompt TEXT,
+            status TEXT DEFAULT 'DRAFT',
+            scheduled_at TEXT,
+            platform_post_id TEXT,
+            published_at TEXT,
+            url TEXT,
+            post_url TEXT,
+            error_message TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    for col, col_type in [("post_url", "TEXT"), ("error_message", "TEXT")]:
+        try:
+            c.execute(f"ALTER TABLE posts ADD COLUMN {col} {col_type}")
+        except Exception:
+            pass
+    
+    # Migration helper for cycle_id on existing tables
+    for tbl in ["products", "campaigns", "customers", "transactions", "analytics_events"]:
+        try:
+            c.execute(f"ALTER TABLE {tbl} ADD COLUMN cycle_id INTEGER DEFAULT 1")
+        except Exception:
+            pass
+
     # Indexes
     c.execute("CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type)")
     c.execute("CREATE INDEX IF NOT EXISTS idx_customers_source ON customers(source)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_posts_cycle ON posts(cycle_id)")
     
     conn.commit()
     conn.close()

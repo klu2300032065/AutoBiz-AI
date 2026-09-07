@@ -16,50 +16,25 @@ class AgentRegistry:
             "MARKETING_SALES_ANALYTICS": MarketingSalesAnalyticsAgent()
         }
 
-    def execute_task(self, task: Task, input_data: str = None) -> TaskResult:
+    def execute_task(self, task: Task) -> dict:
         agent = None
         if task.type == "RESEARCH_PRODUCT":
             agent = self.agents["RESEARCH"]
-            # ResearchAgent takes goal as string
-            try:
-                res = agent.run(input_data)
-                return TaskResult(status="success", result=res)
-            except Exception as e:
-                return TaskResult(status="error", result=None, errors=str(e))
-                
-        elif task.type == "BUILD_PRODUCT":
+        elif task.type in ["BUILD_PRODUCT", "BUILD_PRODUCT"]:
             agent = self.agents["BUILDER"]
-            # BuilderAgent takes spec string
-            try:
-                res = agent.run(input_data)
-                return TaskResult(status="success", result=res)
-            except Exception as e:
-                return TaskResult(status="error", result=None, errors=str(e))
-                
         elif task.type == "RUN_QA":
             agent = self.agents["QA"]
-            # QAAgent takes project_name
-            try:
-                res = agent.run(input_data)
-                is_success = "PASS" in res
-                return TaskResult(status="success" if is_success else "error", result=res, errors=res if not is_success else None)
-            except Exception as e:
-                return TaskResult(status="error", result=None, errors=str(e))
-                
         elif task.type == "PREPARE_DEPLOYMENT":
             agent = self.agents["DEPLOYMENT"]
-            try:
-                res = agent.run(input_data)
-                return TaskResult(status="success", result=res)
-            except Exception as e:
-                return TaskResult(status="error", result=None, errors=str(e))
-                
-        elif task.type == "CREATE_MARKETING" or task.type == "ANALYZE_PERFORMANCE":
+        elif task.type in ["CREATE_MARKETING", "ANALYZE_PERFORMANCE"]:
             agent = self.agents["MARKETING_SALES_ANALYTICS"]
-            try:
-                res = agent.run(input_data)
-                return TaskResult(status="success", result=res)
-            except Exception as e:
-                return TaskResult(status="error", result=None, errors=str(e))
         else:
-            return TaskResult(status="error", result=None, errors=f"Unknown task type: {task.type}")
+            return {"status": "error", "agent": "Registry", "task_id": task.task_id, "result": None, "errors": f"Unknown task type: {task.type}"}
+            
+        try:
+            return agent.run(task)
+        except Exception as e:
+            return {"status": "error", "agent": agent.__class__.__name__, "task_id": task.task_id, "result": None, "errors": str(e)}
+
+    def list_agents(self) -> list:
+        return [agent.__class__.__name__ for agent in self.agents.values()]

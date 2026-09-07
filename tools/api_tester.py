@@ -21,6 +21,7 @@ def test_backend_api(project_path: str) -> dict:
     }
     
     import sys
+    process = None
     # Start the server
     try:
         process = subprocess.Popen(
@@ -67,11 +68,11 @@ def test_backend_api(project_path: str) -> dict:
         }
     finally:
         # Terminate server
-        try:
-            process.terminate()
-            process.wait(timeout=5)
-        except Exception:
-            process.kill()
+        if process:
+            try:
+                process.kill()
+            except Exception:
+                pass
             
     if not results["errors"]:
         results["details"] = "Backend API successfully started and responded to basic ping."

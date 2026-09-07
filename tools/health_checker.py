@@ -45,6 +45,7 @@ def health_check():
         results["details"].append("/health endpoint already exists.")
         
     # Ping the health endpoint
+    process = None
     try:
         process = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "main:app", "--port", "8000"],
@@ -66,10 +67,10 @@ def health_check():
         results["status"] = "FAIL"
         results["errors"].append(f"Failed to hit /health endpoint: {e}")
     finally:
-        try:
-            process.terminate()
-            process.wait(timeout=5)
-        except:
-            process.kill()
+        if process:
+            try:
+                process.kill()
+            except Exception:
+                pass
             
     return results

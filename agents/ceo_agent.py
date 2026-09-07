@@ -28,7 +28,8 @@ class CEOAgent:
             print("CEO: No pending actions. Everything is running smoothly.")
             return
 
-        task = self.task_manager.get_next_runnable_task()
+        state = self.memory.get_business_state()
+        task = self.task_manager.get_next_runnable_task(cycle_id=state.cycle_id)
         if not task:
             return
             
@@ -40,7 +41,10 @@ class CEOAgent:
         input_data = None
         
         if task.type == "RESEARCH_PRODUCT":
-            input_data = self.memory.get_objective()
+            input_data = self.memory.get_objective(state.cycle_id)
+            if not input_data or not input_data.strip():
+                input_data = "Find software products that Indian college students would realistically pay for."
+                self.memory.set_objective(input_data, cycle_id=state.cycle_id)
         elif task.type in ["BUILD_PRODUCT", "RUN_QA", "PREPARE_DEPLOYMENT", "CREATE_MARKETING", "ANALYZE_PERFORMANCE"]:
             if task.type == "BUILD_PRODUCT" and state.product is None and state.research_results:
                 # Extract product name from research
@@ -52,18 +56,20 @@ class CEOAgent:
             else:
                 input_data = state.product
                 
+        task.input_data = input_data
+                
         # Execute task (with up to 3 retries)
         retries = 0
         success = False
         result = None
         while retries < 3 and not success:
-            res = self.registry.execute_task(task, input_data)
-            if res.status == "success":
+            res = self.registry.execute_task(task)
+            if res.get("status") == "success":
                 success = True
-                result = res.result
+                result = res.get("result")
             else:
                 retries += 1
-                print(f"CEO: Agent failed. Retrying ({retries}/3)... Error: {res.errors}")
+                print(f"CEO: Agent failed. Retrying ({retries}/3)... Error: {res.get('errors')}")
                 
         if success:
             print(f"CEO: Task {task.task_id} completed successfully.")
@@ -74,8 +80,14 @@ class CEOAgent:
             if task.type == "RESEARCH_PRODUCT":
                 state.research_results = str(result)
                 state.stage = "RESEARCH_COMPLETED"
+                match = re.search(r"Product:\s*(.+)", str(result))
+                if match:
+                    p_name = match.group(1).strip()
+                    if p_name and not p_name.startswith("Based on"):
+                        state.product = p_name
             elif task.type == "BUILD_PRODUCT":
                 state.build_status = "COMPLETED"
+                state.qa = None
                 state.stage = "BUILD_COMPLETED"
             elif task.type == "RUN_QA":
                 state.qa = "PASS"
@@ -91,3 +103,14 @@ class CEOAgent:
         else:
             print(f"CEO: Task {task.task_id} FAILED after 3 retries.")
             self.task_manager.update_task_status(task.task_id, "FAILED", result="Failed after 3 retries.")
+            
+            state = self.memory.get_business_state()
+            if task.type == "BUILD_PRODUCT":
+                state.build_status = "FAIL"
+            elif task.type == "RUN_QA":
+                state.qa = "FAIL"
+            elif task.type == "PREPARE_DEPLOYMENT":
+                state.deployment = "FAIL"
+            elif task.type == "CREATE_MARKETING":
+                state.marketing = "FAIL"
+            self.memory.update_business_state(state)

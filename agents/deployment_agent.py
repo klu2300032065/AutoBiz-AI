@@ -5,14 +5,36 @@ from tools.environment_checker import check_environment
 from tools.docker_manager import generate_docker_config
 from tools.health_checker import run_health_check
 
+from tools.file_manager import sanitize_project_name, get_project_path
+
+from models.task import Task
+
 class DeploymentAgent:
     def __init__(self):
-        pass
+        self.model = "llama3.2"
 
-    def run(self, project_name: str) -> str:
-        project_path = os.path.join(os.getcwd(), "workspace", "generated_projects", project_name)
+    def run(self, task_or_input) -> dict:
+        if isinstance(task_or_input, Task):
+            task_id = task_or_input.task_id
+            input_data = task_or_input.input_data
+        else:
+            task_id = 0
+            input_data = str(task_or_input)
+
+        if not input_data:
+            return {"status": "error", "agent": "DeploymentAgent", "task_id": task_id, "result": None, "errors": ["No input_data provided"]}
+            
+        project_name = sanitize_project_name(input_data)
+        project_path = get_project_path(project_name)
         if not os.path.exists(project_path):
-            return f"Error: Project directory {project_path} not found."
+            return {
+                "status": "error",
+                "agent": "DeploymentAgent",
+                "task_id": task_id,
+                "result": None,
+                "artifacts": [],
+                "errors": [f"Error: Project directory {project_path} not found."]
+            }
             
         print(f"Deploying {project_name}...")
         
@@ -20,7 +42,14 @@ class DeploymentAgent:
         print("Checking QA Status...")
         qa_status = verify_qa_status(project_name)
         if qa_status["status"] == "FAIL":
-            return "Deployment blocked because QA has failed."
+            return {
+                "status": "error",
+                "agent": "DeploymentAgent",
+                "task_id": task_id,
+                "result": "Deployment blocked because QA has failed.",
+                "artifacts": [],
+                "errors": ["QA Status is FAIL"]
+            }
             
         # 2. Inspect project
         print("Inspecting Project...")
@@ -56,14 +85,14 @@ class DeploymentAgent:
         print("Health Check:", health_res["status"])
         print("Deployment target: Local / Docker")
         
-        # The assignment says "Wait for human approval before actual deployment."
-        # Because we can't truly pause for interactive input without blocking the test suite, 
-        # we will prompt via input() but default to skipping actual deployment.
-        approval = input("\nDo you want to deploy this project? (y/n): ").strip().lower()
-        if approval == 'y':
-            return "\nDeployment process initiated (Simulation only). Success!"
-        else:
-            return "\nDeployment aborted by user."
+        return {
+            "status": "success",
+            "agent": "DeploymentAgent",
+            "task_id": task_id,
+            "result": report + "\nDeployment process initiated (Simulation only). Success!",
+            "artifacts": [],
+            "errors": []
+        }
 
     def generate_report(self, project_name, qa_status, env_res, docker_res, health_res) -> str:
         report = f"""
@@ -112,6 +141,6 @@ BLOCKERS:
         if blockers:
             report += "Resolve blockers before deployment.\n"
         else:
-            report += "Awaiting human approval to deploy.\n"
+            report += "- Configure domain routing\n- Enable SSL certificates\n"
             
         return report

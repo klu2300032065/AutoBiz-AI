@@ -1,0 +1,62 @@
+[
+  {
+    "id": "lead_e7a9413c-da17-4788-8225-1fc6e4d49f8c",
+    "name": "charan",
+    "email": "2300032065cser@gmail.com",
+    "phone": "9963425281",
+    "company": "apex",
+    "project_type": "AI Development",
+    "message": "i need a ai application",
+    "status": "NEW",
+    "created_at": "2026-09-07T19:50:49.786Z",
+    "updated_at": "2026-09-07T19:50:49.786Z"
+  },
+  {
+    "id": "lead_f8e062f8-1a95-463e-96c5-c49ed9039e7f",
+    "name": "Live Test Lead",
+    "email": "autobizai01@gmail.com",
+    "phone": "+91 93819 87069",
+    "company": "Auto BIZ VerificationAuto BIZ Verification",
+    "project_type": "Web Development",
+    "message": "This is a test submission from browser agent verifying full stack form flow and backend email delivery.",
+    "status": "NEW",
+    "created_at": "2026-09-07T19:49:06.567Z",
+    "updated_at": "2026-09-07T19:49:06.567Z"
+  },
+  {
+    "id": "lead_dbaed1fb-02d1-4da7-862e-15d628bddf6a",
+    "name": "Auto BIZ Test Client",
+    "email": "autobizai01@gmail.com",
+    "phone": "+91 93819 87069",
+    "company": "Auto BIZ Systems",
+    "project_type": "Web Development",
+    "message": "Hello! This is a live project inquiry test to verify real-time email delivery.",
+    "status": "NEW",
+    "created_at": "2026-09-07T19:40:36.686Z",
+    "updated_at": "2026-09-07T19:40:36.686Z"
+  },
+  {
+    "id": "lead_771ff3e2-218f-4018-890b-d4ba89b798b1",
+    "name": "Sarah Jenkins",
+    "email": "sarah.jenkins@acmecorp.com",
+    "phone": "+91 93819 87069",
+    "company": "Acme Corp Global",
+    "project_type": "AI Development",
+    "message": "We need a complete modern Next.js SaaS platform redesign with automated lead ingestion and telemetry.We need a complete modern Next.js SaaS platform redesign with automated lead ingestion and telemetry.",
+    "status": "NEW",
+    "created_at": "2026-09-07T19:32:52.181Z",
+    "updated_at": "2026-09-07T19:32:52.181Z"
+  },
+  {
+    "id": "lead_1951cf3c-4e3b-4f06-a775-4bd154a8a54c",
+    "name": "Jane Doe",
+    "email": "jane.doe@enterprise.com",
+    "phone": "+91 98765 43210",
+    "company": "Horizon Analytics",
+    "project_type": "AI Development",
+    "message": "We want to build a custom grounded AI workflow system for internal analytics and automated customer insights.",
+    "status": "NEW",
+    "created_at": "2026-09-07T19:25:56.479Z",
+    "updated_at": "2026-09-07T19:25:56.479Z"
+  }
+]
